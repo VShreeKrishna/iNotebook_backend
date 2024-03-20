@@ -14,12 +14,13 @@ router.post(
   [
     body("name").isLength({ min: 3 }),
     body("email").isEmail(),
-    body("password").isLength({ min: 8 }),
+    body("password").isLength({ min: 5 }),
   ],
   async (req, res) => {
+    let success =false;
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() })
+      return res.status(400).json({errors: errors.array() })
     }
 
     const { name, email, password } = req.body
@@ -28,7 +29,7 @@ router.post(
       // Check if the email is already registered
       const existingUser = await User.findOne({ email })
       if (existingUser) {
-        return res.status(400).json({ message: "Email already registered" })
+        return res.status(400).json({message: "Email already registered" })
       }
 //hashing a password using the salt method  of bcrypt
       const salt =await bcrypt.genSalt(10);
@@ -48,7 +49,8 @@ router.post(
 
         //jsonwebtoken
       const authtoken =jwt.sign(data,JWT_SECRET)  //sync method
-      res.json({authtoken})
+      success=true;
+      res.json({success,authtoken})
 
       //return the values of the user with the hashed password
     //   res.status(201).json(user) // Respond with the saved user
@@ -68,6 +70,8 @@ router.post(
       body("password","passwor cannot be blank").exists()
    ],
     async (req, res) => {
+      let success =false;
+      
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
           return res.status(400).json({ errors: errors.array() })
@@ -76,12 +80,14 @@ router.post(
     try {
         let user =await User.findOne({email});
         if(!user){
+          success =false
             return res.status(400).json({error:"please try to login with correct crendentials"});
         }
 
         const passwordcomapre = await bcrypt.compare(password,user.password);
         if(!passwordcomapre){
-            return res.status(400).json({error:"please try to login with correct crendentials"});
+          success=false;
+            return res.status(400).json({success,error:"please try to login with correct crendentials"});
         }
         
         const data ={           //displaying the user id only
@@ -90,7 +96,8 @@ router.post(
         }
     }
     const authtoken =jwt.sign(data,JWT_SECRET)  //sync method
-    res.json({authtoken})
+    success =true;
+    res.json({success,authtoken})
 
     } catch (error) {
         console.error("Error saving user:", error)
