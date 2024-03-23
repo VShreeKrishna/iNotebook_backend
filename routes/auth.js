@@ -8,7 +8,7 @@ var fetchuser =require('../middleware/fetchuser')
 
 
 // ROUTE:1:Create user using: POST "/api/auth/createuser" Doesn't require Auth
-const JWT_SECRET ="krishnawilltakerevenge"
+const JWT_SECRET =""  //kwtr
 router.post(
   "/createuser",
   [
